@@ -1,0 +1,24 @@
+name: E2E
+
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  test-heroku:
+    timeout-minutes: 15
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - run: yarn install
+      - name: Wait for Server
+        run:
+          npx wait-on https://ds-heroku-review-pr-${{
+          github.event.pull_request.number }}.herokuapp.com
+      - name: Run E2E Tests
+        run:
+          yarn test --config baseUrl=https://ds-heroku-review-pr-${{
+          github.event.pull_request.number }}.herokuapp.com
+        env:
+          CYPRESS_DEPLOYSENTINEL_KEY: ${{ secrets.CYPRESS_DEPLOYSENTINEL_KEY }}
+          ELECTRON_EXTRA_LAUNCH_ARGS: "--remote-debugging-port=40500"
